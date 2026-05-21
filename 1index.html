@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Электронная очередь | Столовая Университета</title>
+    <style>
+        /* ВСЕ ВАШИ СТИЛИ ОСТАЮТСЯ БЕЗ ИЗМЕНЕНИЙ – они уже идеальны */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', sans-serif;
+        }
+        body {
+            background: linear-gradient(145deg, #e9eef3 0%, #dce2ea 100%);
+            min-height: 100vh;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .queue-container {
+            max-width: 1300px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(2px);
+            border-radius: 3rem;
+            box-shadow: 0 25px 45px -15px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.6);
+            overflow: hidden;
+            padding: 1.8rem 2rem 2rem 2rem;
+            transition: all 0.2s;
+        }
+        .header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.08);
+            padding-bottom: 1rem;
+        }
+        .title-section h1 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e3c2c, #2a5a3a);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+        }
+        .title-section p {
+            color: #3a5e47;
+            font-weight: 500;
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+        .stats {
+            background: white;
+            padding: 0.5rem 1.2rem;
+            border-radius: 60px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+            text-align: right;
+        }
+        .stats span {
+            font-weight: 700;
+            font-size: 1.8rem;
+            color: #2b6e44;
+            margin-right: 0.25rem;
+        }
+        .stats .stats-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #2c3e2f;
+        }
+        .action-panel {
+            background: white;
+            border-radius: 2rem;
+            padding: 1.5rem 1.8rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .register-box {
+            flex: 2;
+            min-width: 220px;
+        }
+        .register-box h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1e3c2c;
+            margin-bottom: 0.75rem;
+        }
+        .input-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.7rem;
+            align-items: center;
+        }
+        .input-group input {
+            flex: 2;
+            padding: 0.8rem 1rem;
+            border-radius: 2rem;
+            border: 1px solid #cfdfd3;
+            background: #fefef7;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.2s;
+        }
+        .input-group input:focus {
+            border-color: #2b6e44;
+            box-shadow: 0 0 0 3px rgba(43, 110, 68, 0.2);
+        }
+        .btn {
+            border: none;
+            background: #2b6e44;
+            color: white;
+            font-weight: 600;
+            padding: 0.7rem 1.4rem;
+            border-radius: 2.5rem;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+            background: #2b6e44;
+        }
+        .btn-primary:hover {
+            background: #1f5535;
+            transform: translateY(-1px);
+        }
+        .btn-outline {
+            background: white;
+            border: 1px solid #2b6e44;
+            color: #2b6e44;
+            box-shadow: none;
+        }
+        .btn-outline:hover {
+            background: #eef6f0;
+        }
+        .btn-danger {
+            background: #c94f4f;
+        }
+        .btn-danger:hover {
+            background: #b13e3e;
+        }
+        .btn-warning {
+            background: #e6a017;
+        }
+        .btn-warning:hover {
+            background: #cc8a0f;
+        }
+        .admin-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            align-items: center;
+            background: #f4f8f5;
+            padding: 0.8rem 1.2rem;
+            border-radius: 2rem;
+        }
+        .admin-controls span {
+            font-weight: 500;
+            color: #2c5a3a;
+        }
+        .queue-dashboard {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+        .queue-list-section {
+            flex: 2;
+            min-width: 260px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 1.8rem;
+            padding: 1rem 0 1rem 0;
+            backdrop-filter: blur(4px);
+        }
+        .serving-section {
+            flex: 1.2;
+            min-width: 260px;
+            background: white;
+            border-radius: 1.8rem;
+            padding: 1.2rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        }
+        .section-title {
+            font-weight: 700;
+            font-size: 1.3rem;
+            padding: 0 1.2rem 0.8rem 1.2rem;
+            border-bottom: 2px solid #e2e8e2;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #1c3a2a;
+        }
+        .queue-scroll {
+            max-height: 500px;
+            overflow-y: auto;
+            padding: 0.5rem 0.8rem;
+        }
+        .queue-item {
+            background: white;
+            margin: 0.7rem 0;
+            padding: 0.8rem 1rem;
+            border-radius: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+            transition: all 0.2s;
+            border: 1px solid #e9f0e9;
+        }
+        .queue-item:hover {
+            transform: translateX(4px);
+            border-color: #bdd8c4;
+        }
+        .queue-number {
+            font-weight: 800;
+            font-size: 1.3rem;
+            background: #eef3ea;
+            padding: 0.2rem 0.9rem;
+            border-radius: 2rem;
+            color: #1c5a38;
+        }
+        .person-name {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #1f2f25;
+            flex: 1;
+            margin-left: 1rem;
+        }
+        .remove-btn {
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            cursor: pointer;
+            color: #b0c4b0;
+            transition: 0.2s;
+            padding: 0 6px;
+        }
+        .remove-btn:hover {
+            color: #d9534f;
+            transform: scale(1.1);
+        }
+        .empty-queue {
+            text-align: center;
+            padding: 2rem;
+            color: #87a49a;
+            font-weight: 500;
+        }
+        .now-serving-card {
+            background: #fef8e7;
+            border-radius: 1.4rem;
+            padding: 1rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            border-left: 6px solid #e6a017;
+        }
+        .serving-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            color: #b47c2e;
+        }
+        .serving-number {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #cb7b1f;
+            line-height: 1;
+            margin: 0.5rem 0;
+        }
+        .serving-name {
+            font-weight: 500;
+            color: #4e5e4b;
+            font-size: 1rem;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 0.8rem;
+            justify-content: center;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        .history-title {
+            margin-top: 1rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #617a6b;
+            border-top: 1px solid #e0ece0;
+            padding-top: 1rem;
+        }
+        .history-list {
+            font-size: 0.85rem;
+            max-height: 150px;
+            overflow-y: auto;
+            color: #4a6859;
+            margin-top: 0.5rem;
+        }
+        .history-item {
+            padding: 0.25rem 0;
+            border-bottom: 1px dashed #e2e9e2;
+        }
+        @media (max-width: 780px) {
+            .queue-container { padding: 1rem; }
+            .header { flex-direction: column; gap: 0.8rem; }
+            .stats { text-align: left; align-self: flex-start; }
+        }
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.75rem;
+            color: #76937f;
+        }
+        button:active { transform: scale(0.97); }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            color: white;
+            font-size: 1.2rem;
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+<body>
+<div class="queue-container">
+    <div class="header">
+        <div class="title-section">
+            <h1>🍽️ Университетская столовая</h1>
+            <p>Электронная очередь · Живая лента · Честный порядок</p>
+        </div>
+        <div class="stats">
+            <span id="queueCount">0</span>
+            <span class="stats-label">в очереди</span>
+        </div>
+    </div>
+
+    <div class="action-panel">
+        <div class="register-box">
+            <h3>✍️ Встать в очередь</h3>
+            <div class="input-group">
+                <input type="text" id="studentName" placeholder="Ваше имя (например, Иван Петров)" maxlength="30" autocomplete="off">
+                <button id="enqueueBtn" class="btn btn-primary">➕ Добавить в очередь</button>
+            </div>
+            <small style="color:#5f7e6b; margin-top: 0.5rem; display:block;">Введите имя и получите номер в очереди</small>
+        </div>
+        <div class="admin-controls">
+            <span>⚙️ Администратор/Повар</span>
+            <button id="callNextBtn" class="btn btn-primary" style="background:#c07a2b;">🔔 Следующий гость</button>
+            <button id="resetQueueBtn" class="btn btn-outline" style="border-color:#c94f4f; color:#c94f4f;">♻️ Сброс очереди</button>
+        </div>
+    </div>
+
+    <div class="queue-dashboard">
+        <div class="queue-list-section">
+            <div class="section-title"><span>📋 Очередь питания</span></div>
+            <div id="queueListContainer" class="queue-scroll">
+                <div class="empty-queue">✨ Очередь пуста. Добавьте студентов или сотрудников!</div>
+            </div>
+        </div>
+        <div class="serving-section">
+            <div class="section-title"><span>🍲 Сейчас обслуживают</span></div>
+            <div id="nowServingPanel">
+                <div class="now-serving-card">
+                    <div class="serving-label">текущий посетитель</div>
+                    <div class="serving-number" id="currentNumber">—</div>
+                    <div class="serving-name" id="currentName">Ожидание вызова</div>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button id="completeServingBtn" class="btn btn-primary" style="background:#47976b;">✅ Завершить обслуживание</button>
+                <button id="removeCurrentBtn" class="btn btn-outline" style="border-color:#b6824a; color:#b56a1a;">❌ Удалить текущего</button>
+            </div>
+            <div class="history-title">📜 История обслуживания (последние 5)</div>
+            <div id="historyList" class="history-list">
+                <div class="history-item" style="color:#acbfb3;">Пока пусто</div>
+            </div>
+        </div>
+    </div>
+    <footer>💡 Система электронной очереди — честный порядок. Администратор вызывает следующего, а студент может отменить заявку.</footer>
+</div>
+
+<script src="https://vk.com/js/api/xd_connection.js?2"></script>
+<script>
+    let queue = [];
+    let nextNumber = 1;
+    let currentServing = null;
+    let serviceHistory = [];
+
+    // DOM элементы
+    const queueCountSpan = document.getElementById('queueCount');
+    const queueListContainer = document.getElementById('queueListContainer');
+    const currentNumberSpan = document.getElementById('currentNumber');
+    const currentNameSpan = document.getElementById('currentName');
+    const historyListDiv = document.getElementById('historyList');
+    const studentNameInput = document.getElementById('studentName');
+    const enqueueBtn = document.getElementById('enqueueBtn');
+    const callNextBtn = document.getElementById('callNextBtn');
+    const resetQueueBtn = document.getElementById('resetQueueBtn');
+    const completeServingBtn = document.getElementById('completeServingBtn');
+    const removeCurrentBtn = document.getElementById('removeCurrentBtn');
+
+    let vkReady = false;
+    let loadingOverlay = null;
+
+    function showLoading(message = "Загрузка...") {
+        if (loadingOverlay) loadingOverlay.remove();
+        loadingOverlay = document.createElement('div');
+        loadingOverlay.className = 'loading-overlay';
+        loadingOverlay.innerText = message;
+        document.body.appendChild(loadingOverlay);
+    }
+    function hideLoading() {
+        if (loadingOverlay) loadingOverlay.remove();
+        loadingOverlay = null;
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+    }
+
+    function saveToVKStorage() {
+        if (!vkReady) return;
+        const dataToStore = {
+            queue: queue,
+            nextNumber: nextNumber,
+            currentServing: currentServing,
+            serviceHistory: serviceHistory
+        };
+        const value = JSON.stringify(dataToStore);
+        VK.api("storage.set", { key: "canteenQueue", value: value }, function(res) {
+            if (res && res.response) {
+                console.log("Сохранено в VK Storage");
+            } else {
+                console.error("Ошибка сохранения:", res);
+            }
+        });
+    }
+
+    function loadFromVKStorage(callback) {
+        if (!vkReady) {
+            if (callback) callback(false);
+            return;
+        }
+        VK.api("storage.get", { key: "canteenQueue" }, function(res) {
+            if (res && res.response && res.response.length && res.response[0].value) {
+                try {
+                    const data = JSON.parse(res.response[0].value);
+                    if (data.queue && Array.isArray(data.queue)) queue = data.queue;
+                    if (typeof data.nextNumber === 'number') nextNumber = data.nextNumber;
+                    if (data.currentServing) currentServing = data.currentServing;
+                    if (data.serviceHistory && Array.isArray(data.serviceHistory)) serviceHistory = data.serviceHistory;
+                    // Очистка дубликатов
+                    const ids = new Set();
+                    queue = queue.filter(item => {
+                        if (ids.has(item.id)) return false;
+                        ids.add(item.id);
+                        return true;
+                    });
+                    if (currentServing) {
+                        queue = queue.filter(p => p.id !== currentServing.id);
+                    }
+                    // Нормализация nextNumber
+                    let maxNum = 0;
+                    queue.forEach(p => { if (p.number > maxNum) maxNum = p.number; });
+                    if (currentServing && currentServing.number > maxNum) maxNum = currentServing.number;
+                    if (maxNum >= nextNumber) nextNumber = maxNum + 1;
+                    if (nextNumber < 1) nextNumber = 1;
+                    renderAll();
+                    if (callback) callback(true);
+                } catch(e) {
+                    console.warn(e);
+                    if (callback) callback(false);
+                }
+            } else {
+                // Данных нет – оставляем начальные значения
+                renderAll();
+                if (callback) callback(true);
+            }
+            hideLoading();
+        });
+    }
+
+    function enqueuePerson(name) {
+        const trimmed = name.trim();
+        if (trimmed === "") { alert("Пожалуйста, введите имя для добавления в очередь!"); return false; }
+        if (trimmed.length > 30) { alert("Имя не должно превышать 30 символов"); return false; }
+        const newId = Date.now() + Math.random() * 10000;
+        const number = nextNumber++;
+        const newPerson = { id: newId, name: trimmed, timestamp: Date.now(), number: number };
+        queue.push(newPerson);
+        queue.sort((a, b) => a.number - b.number);
+        renderAll();
+        saveToVKStorage();
+        return true;
+    }
+
+    function removeFromQueue(id) {
+        queue = queue.filter(p => p.id !== id);
+        renderAll();
+        saveToVKStorage();
+    }
+
+    function finishCurrentServingAndAddToHistory() {
+        if (!currentServing) return false;
+        const historyEntry = {
+            name: currentServing.name,
+            number: currentServing.number,
+            servedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        serviceHistory.unshift(historyEntry);
+        if (serviceHistory.length > 5) serviceHistory.pop();
+        currentServing = null;
+        renderAll();
+        saveToVKStorage();
+        return true;
+    }
+
+    function callNext() {
+        if (currentServing !== null) {
+            const userConfirm = confirm("Сейчас обслуживается '" + currentServing.name + "' (№" + currentServing.number + "). Завершить его обслуживание и перейти к следующему?");
+            if (!userConfirm) return;
+            finishCurrentServingAndAddToHistory();
+        }
+        if (queue.length === 0) { alert("Очередь пуста. Некого вызывать!"); return; }
+        const nextPerson = queue.shift();
+        currentServing = { id: nextPerson.id, name: nextPerson.name, number: nextPerson.number };
+        renderAll();
+        saveToVKStorage();
+    }
+
+    function discardCurrentServing() {
+        if (!currentServing) { alert("Нет активного обслуживания"); return; }
+        const confirmDiscard = confirm(`Удалить текущего гостя "${currentServing.name}" из системы? (не попадет в историю)`);
+        if (confirmDiscard) {
+            currentServing = null;
+            renderAll();
+            saveToVKStorage();
+        }
+    }
+
+    function resetFullQueue() {
+        const confirmReset = confirm("⚠️ Полный сброс очереди: все ожидающие будут удалены! Текущий гость останется (если есть). История не удаляется. Продолжить?");
+        if (!confirmReset) return;
+        queue = [];
+        renderAll();
+        saveToVKStorage();
+    }
+
+
+    function renderQueueList() {
+        if (!queueListContainer) return;
+        if (queue.length === 0) {
+            queueListContainer.innerHTML = `<div class="empty-queue">🍽️ Очередь пуста. Добавьте студентов!</div>`;
+            return;
+        }
+        let html = '';
+        queue.forEach(person => {
+            html += `<div class="queue-item" data-id="${person.id}">
+                        <div class="queue-number">№${person.number}</div>
+                        <div class="person-name">${escapeHtml(person.name)}</div>
+                        <button class="remove-btn" data-id="${person.id}" title="Отказаться от очереди">✖️</button>
+                    </div>`;
+        });
+        queueListContainer.innerHTML = html;
+        document.querySelectorAll('.remove-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = Number(btn.getAttribute('data-id'));
+                if (!isNaN(id)) {
+                    const personToRemove = queue.find(p => p.id === id);
+                    if (personToRemove && confirm(`Удалить "${personToRemove.name}" (№${personToRemove.number}) из очереди?`)) {
+                        removeFromQueue(id);
+                    }
+                }
+            });
+        });
+    }
+
+    function renderNowServing() {
+        if (currentServing) {
+            currentNumberSpan.innerText = `№${currentServing.number}`;
+            currentNameSpan.innerText = `${escapeHtml(currentServing.name)}`;
+        } else {
+            currentNumberSpan.innerText = "—";
+            currentNameSpan.innerText = "Нет посетителей";
+        }
+    }
+
+    function renderHistory() {
+        if (!historyListDiv) return;
+        if (serviceHistory.length === 0) {
+            historyListDiv.innerHTML = '<div class="history-item" style="color:#acbfb3;">📭 История обслуживания пуста</div>';
+            return;
+        }
+        let histHtml = '';
+        serviceHistory.forEach(record => {
+            histHtml += `<div class="history-item">🍜 №${record.number} · ${escapeHtml(record.name)}  (${record.servedAt || 'обслужен'})</div>`;
+        });
+        historyListDiv.innerHTML = histHtml;
+    }
+
+    function updateQueueCounter() { if (queueCountSpan) queueCountSpan.innerText = queue.length; }
+
+    function renderAll() {
+        renderQueueList();
+        renderNowServing();
+        renderHistory();
+        updateQueueCounter();
+    }
+
+
+    window.onload = function() {
+        showLoading("Подключение к ВКонтакте...");
+        VK.init({
+            apiId: 54603694
+        });
+        VK.addCallback('onApiReady', function() {
+            vkReady = true;
+            loadFromVKStorage(() => {
+                hideLoading();
+            });
+        });
+    };
+
+
+    enqueueBtn.addEventListener('click', () => {
+        const name = studentNameInput.value;
+        if (enqueuePerson(name)) { studentNameInput.value = ''; studentNameInput.focus(); }
+    });
+    studentNameInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); enqueueBtn.click(); } });
+    callNextBtn.addEventListener('click', () => callNext());
+    resetQueueBtn.addEventListener('click', () => resetFullQueue());
+    completeServingBtn.addEventListener('click', () => {
+        if (!currentServing) { alert("Нет активного обслуживания. Вызовите следующего."); return; }
+        finishCurrentServingAndAddToHistory();
+    });
+    removeCurrentBtn.addEventListener('click', () => discardCurrentServing());
+</script>
+</body>
+</html>
